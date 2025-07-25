@@ -1,0 +1,14 @@
+.venv/
+venv/
+env/
+.env/
+.idea/
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.py[cod]
+*$py.class
+*.csv
+data/*.csv
+checkpoints/
