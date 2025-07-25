@@ -1,0 +1,35 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-toml
+      - id: debug-statements
+
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pycqa/pylint
+    rev: v3.3.0
+    hooks:
+      - id: pylint
+        language_version: python3
+        name: pylint
+        entry: pylint
+        types: [python]
+        args:
+          - --disable=C0111,R0903,C0103,W0105,R0913,R0914,R0912,R0915,E0401,R0917
+          - --generated-members=objects
+          - --max-line-length=120
