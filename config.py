@@ -29,11 +29,13 @@ class Config:
     # Hierarchical settings
     parent_confidence_threshold: float = 0.2  # Min confidence to consider parent prediction
     prediction_threshold: Dict[str, float] = None
-    
+
+    # Hint settings:
+    use_hints: bool = False
+
     def __post_init__(self):
         if self.prediction_threshold is None:
             self.prediction_threshold = {
-                'section': 0.5,
-                'class': 0.2,
-                'subclass': 0.1
+                'section': 0.7,
+                'class': 0.6,
             }
