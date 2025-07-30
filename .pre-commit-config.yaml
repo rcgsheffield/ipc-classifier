@@ -30,6 +30,6 @@ repos:
         entry: pylint
         types: [python]
         args:
-          - --disable=C0111,R0903,C0103,W0105,R0913,R0914,R0912,R0915,E0401,R0917
+          - --disable=C0111,R0903,C0103,W0105,R0913,R0914,R0912,R0915,E0401,R0917, R0902, R0902, R0801
           - --generated-members=objects
           - --max-line-length=120

@@ -26,9 +26,7 @@ class HierarchicalIPCClassifier(nn.Module):
         # Level-specific classifiers with proper initialization
         self.section_classifier = nn.Linear(hidden_size, n_section)
         nn.init.xavier_uniform_(self.section_classifier.weight)
-        nn.init.constant_(
-            self.section_classifier.bias, -2.0
-        )  # Negative bias for multi-label
+        nn.init.constant_(self.section_classifier.bias, -2.0)
 
         self.class_classifier = nn.Linear(hidden_size, n_class)
         nn.init.xavier_uniform_(self.class_classifier.weight)
@@ -65,7 +63,6 @@ class HierarchicalIPCClassifier(nn.Module):
         # Class predictions (optionally constrained by section)
         class_logits = self.class_classifier(pooled_output)
         if parent_constraints and "class_mask" in parent_constraints:
-            # Apply mask by setting invalid classes to very negative value
             class_logits = class_logits.masked_fill(
                 ~parent_constraints["class_mask"], -10000.0
             )
@@ -99,23 +96,15 @@ class HierarchicalIPCClassifier(nn.Module):
         batch_size = input_ids.size(0)
         device = input_ids.device
 
-        # Get BERT embeddings once
         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
         pooled_output = self.dropout(outputs.pooler_output)
 
-        # Get section predictions (unconstrained)
         section_logits = self.section_classifier(pooled_output)
-        section_probs = torch.sigmoid(
-            section_logits
-        ).detach()  # Detach to prevent gradient flow through constraints
+        section_probs = torch.sigmoid(section_logits).detach()
 
-        # Create class constraints based on confident section predictions
-        class_masks = torch.ones(
-            (batch_size, self.n_class), dtype=torch.bool, device=device
-        )
+        class_masks = torch.ones((batch_size, self.n_class), dtype=torch.bool, device=device)
 
         for i in range(batch_size):
-            # Get sections with confidence above threshold
             confident_sections_mask = section_probs[i] > confidence_threshold
 
             if confident_sections_mask.any():
@@ -124,24 +113,16 @@ class HierarchicalIPCClassifier(nn.Module):
                     section_code = processor.encoders["section"].classes_[j.item()]
                     confident_sections.append(section_code)
 
-                # Get valid classes for these sections
-                valid_classes = processor.get_valid_children(
-                    "section", confident_sections
-                )
+                valid_classes = processor.get_valid_children("section", confident_sections)
 
-                if valid_classes:  # Only apply mask if we have valid classes
-                    class_masks[i] = False  # Reset to False
-                    for j, class_code in enumerate(
-                        processor.encoders["class"].classes_
-                    ):
+                if valid_classes:
+                    class_masks[i] = False
+                    for j, class_code in enumerate(processor.encoders["class"].classes_):
                         if class_code in valid_classes:
                             class_masks[i, j] = True
             else:
-                class_masks[i] = (
-                    True  # if no valid classes from sections, allow all classes
-                )
-                
-        # Get class predictions with constraints
+                class_masks[i] = True
+
         class_logits = self.class_classifier(pooled_output)
         if use_soft_masking:
             soft_mask = torch.where(class_masks, 1.0, 0.1)
@@ -153,3 +134,4 @@ class HierarchicalIPCClassifier(nn.Module):
             "section_logits": section_logits,
             "class_logits": class_logits,
         }
+

@@ -9,4 +9,3 @@ dependencies:
   - scikit-learn
   - tqdm
   - transformers
-prefix: /mnt/parscratch/users/cs1fxa/anaconda/.envs/ai-innovation

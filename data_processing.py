@@ -13,7 +13,7 @@ class IPCDataProcessor:
         # Load only hierarchy_level == 2 data
         self.df_ipc = pd.read_csv(ipc_metadata_path)
         self.df_ipc = self.df_ipc[self.df_ipc['hierarchy_level'] == 2].copy()
-        
+
         self.hierarchy_mappings = self._build_hierarchy_mappings()
         self.hierarchy_texts = self._build_hierarchy_texts()
         self.encoders = {}
@@ -33,22 +33,22 @@ class IPCDataProcessor:
                     mappings["section_to_class"][section].append(class_code)
 
         return mappings
-    
+
     def _build_hierarchy_texts(self) -> Dict[str, Dict[str, str]]:
         """Extract IPC descriptions from full_hierarchical_description."""
         texts = {"section": {}, "class": {}}
-        
+
         for _, row in self.df_ipc.iterrows():
             desc = row.get("full_hierarchical_description", "")
             if not desc or pd.isna(desc):
                 continue
-                
+
             # Parse the description format: [A] HUMAN NECESSITIES | [A01] AGRICULTURE...
             parts = desc.split(" | ")
-            
+
             section_code = row["section_code"]
             class_code = row["class_code"]
-            
+
             # Extract section description
             if len(parts) >= 1 and section_code:
                 section_part = parts[0]
@@ -56,12 +56,12 @@ class IPCDataProcessor:
                 if f"[{section_code}]" in section_part:
                     section_desc = section_part.split(f"[{section_code}]", 1)[1].strip()
                     texts["section"][section_code] = section_desc
-            
+
             # For class, combine section and class descriptions
             if len(parts) >= 2 and class_code:
                 # Full description includes both section and class
                 texts["class"][class_code] = desc
-                    
+
         return texts
 
     @staticmethod
@@ -79,17 +79,17 @@ class IPCDataProcessor:
     def get_all_level_hints(self, section_codes: List[str], class_codes: List[str]) -> str:
         """Get combined hints from all hierarchy levels."""
         hints = []
-        
+
         # Add section hints
         for code in section_codes:
             if code in self.hierarchy_texts["section"]:
                 hints.append(f"[{code}] {self.hierarchy_texts['section'][code]}")
-        
+
         # Add class hints (which already include full hierarchy)
         for code in class_codes:
             if code in self.hierarchy_texts["class"]:
                 hints.append(self.hierarchy_texts["class"][code])
-                
+
         return " | ".join(hints) if hints else ""
 
     def process_dataframe(self, df: pd.DataFrame, add_hints: bool = False) -> pd.DataFrame:
@@ -106,7 +106,7 @@ class IPCDataProcessor:
         if add_hints and "section" in df.columns and "class" in df.columns:
             df["appln_abstract_with_hint"] = df.apply(
                 lambda row: (
-                    row["appln_abstract"] + " [SEP] " + 
+                    row["appln_abstract"] + " [SEP] " +
                     self.get_all_level_hints(row["section"], row["class"])
                 ).strip(),
                 axis=1
@@ -144,10 +144,10 @@ class IPCDataset(Dataset):
     """Dataset for hierarchical IPC classification."""
 
     def __init__(
-        self, 
-        df: pd.DataFrame, 
-        tokenizer, 
-        encoders: Dict, 
+        self,
+        df: pd.DataFrame,
+        tokenizer,
+        encoders: Dict,
         max_length: int = 512,
         use_hints: bool = False
     ):
@@ -162,7 +162,7 @@ class IPCDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        
+
         # Use hint-enhanced text if available and requested
         if self.use_hints and "appln_abstract_with_hint" in row:
             text = row["appln_abstract_with_hint"]
@@ -190,3 +190,4 @@ class IPCDataset(Dataset):
             "attention_mask": encoding["attention_mask"].squeeze(0),
             **labels,
         }
+

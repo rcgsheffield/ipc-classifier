@@ -1,33 +1,33 @@
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict
 
 
 @dataclass
 class Config:
     # Model settings
-    model_name: str = 'allenai/scibert_scivocab_uncased'
+    model_name: str = "allenai/scibert_scivocab_uncased"
     max_length: int = 512
     dropout: float = 0.3
-    
+
     # Training settings
     batch_size: int = 32
     learning_rate: float = 1e-5
     epochs: int = 20
     warmup_ratio: float = 0.1
-    use_fp16: bool = True  # Enable mixed precision training for faster training (set True if no NaN issues)
-    
+    use_fp16: bool = True  # Enable mixed precision training for faster training
+
     # Data paths
-    train_path: str = 'data/train.csv'
-    val_path: str = 'data/val.csv'
-    test_path: str = 'data/test.csv'
-    ipc_metadata_path: str = 'data/full_ipc_combined.csv'
-    
+    train_path: str = "data/train.csv"
+    val_path: str = "data/val.csv"
+    test_path: str = "data/test.csv"
+    ipc_metadata_path: str = "data/full_ipc_combined.csv"
+
     # Output settings
-    checkpoint_dir: str = './checkpoints'
-    output_path: str = 'predictions.csv'
-    
+    checkpoint_dir: str = "./checkpoints"
+    output_path: str = "predictions.csv"
+
     # Hierarchical settings
-    parent_confidence_threshold: float = 0.2  # Min confidence to consider parent prediction
+    parent_confidence_threshold: float = 0.2
     prediction_threshold: Dict[str, float] = None
 
     # Hint settings:
