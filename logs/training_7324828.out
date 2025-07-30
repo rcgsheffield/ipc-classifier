@@ -1,0 +1,153 @@
+Job ID: 7324828
+Running on node: gpu09
+Using device: cuda
+Using mixed precision training (fp16)
+Loading data processor...
+Loading datasets...
+Train samples: 124641
+Val samples: 17903
+Using hints: False
+section: 8 unique labels
+class: 123 unique labels
+Loading tokenizer...
+Initializing model...
+
+Epoch 1/20
+Train loss: 0.3659
+section - F1 micro: 0.7096, F1 macro: 0.6219, Precision micro: 0.8980, Recall micro: 0.5865
+class - F1 micro: 0.0127, F1 macro: 0.0017, Precision micro: 0.9643, Recall micro: 0.0064
+Average F1: 0.3612
+New best model saved! (F1: 0.3612)
+
+Epoch 2/20
+Train loss: 0.2347
+section - F1 micro: 0.7672, F1 macro: 0.7087, Precision micro: 0.8930, Recall micro: 0.6724
+class - F1 micro: 0.1612, F1 macro: 0.0177, Precision micro: 0.9308, Recall micro: 0.0882
+Average F1: 0.4642
+New best model saved! (F1: 0.4642)
+
+Epoch 3/20
+Train loss: 0.1640
+section - F1 micro: 0.7963, F1 macro: 0.7689, Precision micro: 0.8936, Recall micro: 0.7181
+class - F1 micro: 0.3313, F1 macro: 0.0433, Precision micro: 0.8725, Recall micro: 0.2045
+Average F1: 0.5638
+New best model saved! (F1: 0.5638)
+
+Epoch 4/20
+Train loss: 0.1303
+section - F1 micro: 0.8060, F1 macro: 0.7842, Precision micro: 0.8834, Recall micro: 0.7410
+class - F1 micro: 0.4107, F1 macro: 0.0699, Precision micro: 0.8490, Recall micro: 0.2709
+Average F1: 0.6083
+New best model saved! (F1: 0.6083)
+
+Epoch 5/20
+Train loss: 0.1091
+section - F1 micro: 0.8162, F1 macro: 0.7960, Precision micro: 0.8820, Recall micro: 0.7595
+class - F1 micro: 0.4413, F1 macro: 0.0847, Precision micro: 0.8566, Recall micro: 0.2973
+Average F1: 0.6288
+New best model saved! (F1: 0.6288)
+
+Epoch 6/20
+Train loss: 0.0939
+section - F1 micro: 0.8188, F1 macro: 0.7988, Precision micro: 0.8650, Recall micro: 0.7773
+class - F1 micro: 0.4954, F1 macro: 0.1211, Precision micro: 0.8315, Recall micro: 0.3528
+Average F1: 0.6571
+New best model saved! (F1: 0.6571)
+
+Epoch 7/20
+Train loss: 0.0826
+section - F1 micro: 0.8192, F1 macro: 0.8007, Precision micro: 0.8694, Recall micro: 0.7745
+class - F1 micro: 0.5017, F1 macro: 0.1152, Precision micro: 0.8537, Recall micro: 0.3552
+Average F1: 0.6604
+New best model saved! (F1: 0.6604)
+
+Epoch 8/20
+Train loss: 0.0739
+section - F1 micro: 0.8220, F1 macro: 0.8041, Precision micro: 0.8606, Recall micro: 0.7867
+class - F1 micro: 0.5236, F1 macro: 0.1393, Precision micro: 0.8424, Recall micro: 0.3798
+Average F1: 0.6728
+New best model saved! (F1: 0.6728)
+
+Epoch 9/20
+Train loss: 0.0668
+section - F1 micro: 0.8249, F1 macro: 0.8071, Precision micro: 0.8527, Recall micro: 0.7990
+class - F1 micro: 0.5477, F1 macro: 0.1537, Precision micro: 0.8234, Recall micro: 0.4104
+Average F1: 0.6863
+New best model saved! (F1: 0.6863)
+
+Epoch 10/20
+Train loss: 0.0612
+section - F1 micro: 0.8249, F1 macro: 0.8083, Precision micro: 0.8425, Recall micro: 0.8081
+class - F1 micro: 0.5555, F1 macro: 0.1670, Precision micro: 0.8167, Recall micro: 0.4209
+Average F1: 0.6902
+New best model saved! (F1: 0.6902)
+
+Epoch 11/20
+Train loss: 0.0566
+section - F1 micro: 0.8260, F1 macro: 0.8094, Precision micro: 0.8408, Recall micro: 0.8117
+class - F1 micro: 0.5630, F1 macro: 0.1747, Precision micro: 0.8112, Recall micro: 0.4311
+Average F1: 0.6945
+New best model saved! (F1: 0.6945)
+
+Epoch 12/20
+Train loss: 0.0527
+section - F1 micro: 0.8275, F1 macro: 0.8103, Precision micro: 0.8387, Recall micro: 0.8166
+class - F1 micro: 0.5749, F1 macro: 0.1824, Precision micro: 0.8192, Recall micro: 0.4429
+Average F1: 0.7012
+New best model saved! (F1: 0.7012)
+
+Epoch 13/20
+Train loss: 0.0495
+section - F1 micro: 0.8265, F1 macro: 0.8108, Precision micro: 0.8383, Recall micro: 0.8150
+class - F1 micro: 0.5816, F1 macro: 0.1955, Precision micro: 0.8157, Recall micro: 0.4519
+Average F1: 0.7041
+New best model saved! (F1: 0.7041)
+
+Epoch 14/20
+Train loss: 0.0468
+section - F1 micro: 0.8257, F1 macro: 0.8074, Precision micro: 0.8376, Recall micro: 0.8141
+class - F1 micro: 0.5846, F1 macro: 0.1990, Precision micro: 0.8204, Recall micro: 0.4541
+Average F1: 0.7052
+New best model saved! (F1: 0.7052)
+
+Epoch 15/20
+Train loss: 0.0446
+section - F1 micro: 0.8267, F1 macro: 0.8098, Precision micro: 0.8303, Recall micro: 0.8232
+class - F1 micro: 0.5923, F1 macro: 0.2091, Precision micro: 0.8116, Recall micro: 0.4663
+Average F1: 0.7095
+New best model saved! (F1: 0.7095)
+
+Epoch 16/20
+Train loss: 0.0427
+section - F1 micro: 0.8271, F1 macro: 0.8105, Precision micro: 0.8263, Recall micro: 0.8279
+class - F1 micro: 0.5991, F1 macro: 0.2157, Precision micro: 0.8142, Recall micro: 0.4739
+Average F1: 0.7131
+New best model saved! (F1: 0.7131)
+
+Epoch 17/20
+Train loss: 0.0412
+section - F1 micro: 0.8279, F1 macro: 0.8123, Precision micro: 0.8268, Recall micro: 0.8290
+class - F1 micro: 0.5981, F1 macro: 0.2176, Precision micro: 0.8177, Recall micro: 0.4715
+Average F1: 0.7130
+
+Epoch 18/20
+Train loss: 0.0401
+section - F1 micro: 0.8294, F1 macro: 0.8143, Precision micro: 0.8328, Recall micro: 0.8260
+class - F1 micro: 0.6023, F1 macro: 0.2221, Precision micro: 0.8211, Recall micro: 0.4755
+Average F1: 0.7158
+New best model saved! (F1: 0.7158)
+
+Epoch 19/20
+Train loss: 0.0392
+section - F1 micro: 0.8290, F1 macro: 0.8121, Precision micro: 0.8272, Recall micro: 0.8309
+class - F1 micro: 0.6086, F1 macro: 0.2357, Precision micro: 0.8083, Recall micro: 0.4881
+Average F1: 0.7188
+New best model saved! (F1: 0.7188)
+
+Epoch 20/20
+Train loss: 0.0387
+section - F1 micro: 0.8293, F1 macro: 0.8129, Precision micro: 0.8286, Recall micro: 0.8301
+class - F1 micro: 0.6071, F1 macro: 0.2319, Precision micro: 0.8129, Recall micro: 0.4844
+Average F1: 0.7182
+
+Training complete! Best F1: 0.7188
