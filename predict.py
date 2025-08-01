@@ -14,10 +14,11 @@ from model import HierarchicalIPCClassifier
 
 
 def predict_batch(model, dataloader, processor, config, device):
-    """Make predictions for a batch of data."""
+    """Make predictions for a batch of data with both threshold and top-k approaches."""
     model.eval()
 
-    all_predictions = []
+    all_predictions_threshold = []
+    all_predictions_topk = []
 
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Predicting"):
@@ -31,19 +32,18 @@ def predict_batch(model, dataloader, processor, config, device):
                 confidence_threshold=config.parent_confidence_threshold,
             )
 
-            batch_preds = {}
-            for level in ["section", "class", "subclass"]:
-                probs = torch.sigmoid(outputs[f"{level}_logits"]).cpu().numpy()
-                batch_preds[level] = probs
+            batch_size = input_ids.size(0)
 
-            for i in range(len(probs)):
-                sample_preds = {}
-                for level in ["section", "class", "subclass"]:
-                    level_probs = batch_preds[level][i]
+            for i in range(batch_size):
+                # Threshold-based predictions
+                sample_preds_threshold = {}
+
+                for level in ["section", "class"]:
+                    probs = torch.sigmoid(outputs[f"{level}_logits"][i]).cpu().numpy()
                     threshold = config.prediction_threshold[level]
 
-                    pred_indices = np.where(level_probs > threshold)[0]
-                    pred_probs = level_probs[pred_indices]
+                    pred_indices = np.where(probs > threshold)[0]
+                    pred_probs = probs[pred_indices]
 
                     sorted_idx = np.argsort(pred_probs)[::-1]
                     pred_indices = pred_indices[sorted_idx]
@@ -53,49 +53,74 @@ def predict_batch(model, dataloader, processor, config, device):
                         processor.encoders[level].classes_[idx] for idx in pred_indices
                     ]
 
-                    sample_preds[level] = list(zip(pred_labels, pred_probs))
+                    sample_preds_threshold[level] = list(zip(pred_labels, pred_probs))
 
-                all_predictions.append(sample_preds)
+                all_predictions_threshold.append(sample_preds_threshold)
 
-    return all_predictions
+                # Top-k predictions
+                if config.use_top_k and config.top_k:
+                    sample_preds_topk = {}
+
+                    for level in ["section", "class"]:
+                        probs = torch.sigmoid(outputs[f"{level}_logits"][i]).cpu().numpy()
+                        k = config.top_k.get(level, 1)
+
+                        # Get top-k indices
+                        if k >= len(probs):
+                            top_k_indices = np.argsort(probs)[::-1]
+                        else:
+                            top_k_indices = np.argpartition(probs, -k)[-k:]
+                            top_k_indices = top_k_indices[np.argsort(probs[top_k_indices])[::-1]]
+
+                        top_k_probs = probs[top_k_indices]
+
+                        # Filter out very low confidence predictions even in top-k
+                        min_confidence = 0.1
+                        valid_mask = top_k_probs > min_confidence
+                        top_k_indices = top_k_indices[valid_mask]
+                        top_k_probs = top_k_probs[valid_mask]
+
+                        pred_labels = [
+                            processor.encoders[level].classes_[idx] for idx in top_k_indices
+                        ]
+
+                        sample_preds_topk[level] = list(zip(pred_labels, top_k_probs))
+
+                    all_predictions_topk.append(sample_preds_topk)
+
+    return all_predictions_threshold, all_predictions_topk
 
 
-def format_predictions_for_csv(predictions, true_labels=None):
-    """Format predictions for CSV output with separate columns for labels and probabilities."""
+def format_predictions_for_csv(predictions, true_labels, project_ids):
+    """Format predictions for CSV output in the specified format."""
     rows = []
 
-    for i, pred in enumerate(predictions):
-        row = {"index": i}
+    for i in range(len(predictions)):
+        row = {
+            "project_id": project_ids[i]
+        }
 
-        if true_labels:
-            for level in ["section", "class", "subclass"]:
-                true_codes = true_labels[i][level]
-                row[f"true_{level}"] = (
-                    f"[{', '.join(true_codes)}]"
-                    if len(true_codes) > 1
-                    else (true_codes[0] if true_codes else "")
-                )
+        # Add true labels
+        for level in ["section", "class"]:
+            true_codes = true_labels[i][level]
+            # Format as comma-separated string without brackets
+            row[f"{level}_label"] = ', '.join(true_codes) if true_codes else ""
 
-        for level in ["section", "class", "subclass"]:
+        # Add predictions
+        pred = predictions[i]
+        for level in ["section", "class"]:
             level_preds = pred[level]
 
             if level_preds:
                 labels = [label for label, _ in level_preds]
-                probs = [f"{prob:.3f}" for _, prob in level_preds]
+                probs = [prob for _, prob in level_preds]
 
-                row[f"{level}_predicted"] = (
-                    f"[{', '.join(labels)}]"
-                    if len(labels) > 1
-                    else (labels[0] if labels else "")
-                )
-                row[f"{level}_probabilities"] = (
-                    f"[{', '.join(probs)}]"
-                    if len(probs) > 1
-                    else (probs[0] if probs else "")
-                )
+                # Format as comma-separated strings
+                row[f"{level}_predicted"] = ', '.join(labels)
+                row[f"{level}_probability"] = ', '.join([f"{p:.3f}" for p in probs])
             else:
                 row[f"{level}_predicted"] = ""
-                row[f"{level}_probabilities"] = ""
+                row[f"{level}_probability"] = ""
 
         rows.append(row)
 
@@ -115,6 +140,7 @@ def main():
     processor = IPCDataProcessor(config.ipc_metadata_path)
     processor.encoders = saved_data["encoders"]
     processor.hierarchy_mappings = saved_data["hierarchy_mappings"]
+    processor.hierarchy_texts = saved_data.get("hierarchy_texts", {})
 
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
@@ -124,11 +150,25 @@ def main():
         os.path.join(config.checkpoint_dir, "best_model.pt"), map_location=device
     )
 
+    # Load saved configuration
+    model_config = checkpoint.get("config", {})
+    use_hints = model_config.get("use_hints", False)
+
+    # Update config with saved thresholds and top-k values
+    if "prediction_threshold" in model_config:
+        config.prediction_threshold = model_config["prediction_threshold"]
+        print(f"Using saved thresholds: {config.prediction_threshold}")
+
+    if "top_k" in model_config:
+        config.top_k = model_config["top_k"]
+        print(f"Using saved top-k values: {config.top_k}")
+
+    print(f"Model was trained with hints: {use_hints}")
+
     model = HierarchicalIPCClassifier(
         model_name=config.model_name,
         n_section=len(processor.encoders["section"].classes_),
         n_class=len(processor.encoders["class"].classes_),
-        n_subclass=len(processor.encoders["subclass"].classes_),
         dropout=config.dropout,
     ).to(device)
 
@@ -136,52 +176,85 @@ def main():
 
     print("Loading test data...")
     test_df = pd.read_csv(config.test_path)
-    test_df = processor.process_dataframe(test_df)
 
-    test_dataset = IPCDataset(test_df, tokenizer, processor.encoders, config.max_length)
+    # Extract project IDs (either appln_id or gtr_proj_id)
+    if 'appln_id' in test_df.columns:
+        project_ids = test_df['appln_id'].values
+    elif 'gtr_proj_id' in test_df.columns:
+        project_ids = test_df['gtr_proj_id'].values
+    else:
+        raise ValueError("No project ID column found (expected 'appln_id' or 'gtr_proj_id')")
+
+    # Process without hints for test data (realistic scenario)
+    test_df = processor.process_dataframe(test_df, add_hints=False)
+
+    test_dataset = IPCDataset(
+        test_df, tokenizer, processor.encoders, config.max_length, use_hints=False
+    )
     test_loader = DataLoader(
-        test_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=4
+        test_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=1
     )
 
     print("Making predictions...")
-    predictions = predict_batch(model, test_loader, processor, config, device)
+    predictions_threshold, predictions_topk = predict_batch(
+        model, test_loader, processor, config, device
+    )
 
+    # Prepare true labels
     true_labels = []
     for _, row in test_df.iterrows():
         true_labels.append(
             {
                 "section": row["section"],
                 "class": row["class"],
-                "subclass": row["subclass"],
             }
         )
 
-    results_df = format_predictions_for_csv(predictions, true_labels)
-    results_df["abstract"] = test_df["appln_abstract"].values
+    # Format results for threshold-based predictions
+    results_threshold_df = format_predictions_for_csv(
+        predictions_threshold, true_labels, project_ids
+    )
 
-    columns = ["index", "abstract"]
-    for level in ["section", "class", "subclass"]:
-        columns.extend(
-            [f"true_{level}", f"{level}_predicted", f"{level}_probabilities"]
+    # Define column order
+    columns = [
+        "project_id",
+        "section_label", "section_predicted", "section_probability",
+        "class_label", "class_predicted", "class_probability"
+    ]
+
+    results_threshold_df = results_threshold_df[columns]
+
+    # Save threshold-based predictions
+    threshold_output_path = config.output_path.replace('.csv', '_threshold.csv')
+    results_threshold_df.to_csv(threshold_output_path, index=False)
+    print(f"Threshold-based predictions saved to {threshold_output_path}")
+
+    # Save top-k predictions if available
+    if predictions_topk:
+        results_topk_df = format_predictions_for_csv(
+            predictions_topk, true_labels, project_ids
         )
+        results_topk_df = results_topk_df[columns]
 
-    results_df = results_df[columns]
-    results_df.to_csv(config.output_path, index=False)
-    print(f"Predictions saved to {config.output_path}")
+        topk_output_path = config.output_path.replace('.csv', '_topk.csv')
+        results_topk_df.to_csv(topk_output_path, index=False)
+        print(f"Top-k predictions saved to {topk_output_path}")
 
-    print("\nSample predictions:")
+    print("\nSample predictions (threshold-based):")
     print("=" * 80)
-    for i in range(min(3, len(results_df))):
-        print(f"\nSample {i+1}:")
-        print(f"Abstract: {results_df.iloc[i]['abstract'][:100]}...")
-        for level in ["section", "class", "subclass"]:
-            true = results_df.iloc[i][f"true_{level}"]
-            pred = results_df.iloc[i][f"{level}_predicted"]
-            probs = results_df.iloc[i][f"{level}_probabilities"]
+    for i in range(min(3, len(results_threshold_df))):
+        print(f"\nSample {i + 1}:")
+        print(f"Project ID: {results_threshold_df.iloc[i]['project_id']}")
+
+        for level in ["section", "class"]:
+            true = results_threshold_df.iloc[i][f"{level}_label"]
+            pred = results_threshold_df.iloc[i][f"{level}_predicted"]
+            prob = results_threshold_df.iloc[i][f"{level}_probability"]
+
             print(f"\n{level.upper()}:")
             print(f"  True: {true}")
-            print(f"  Pred: {pred}")
-            print(f"  Prob: {probs}")
+            print(f"  Predicted: {pred}")
+            print(f"  Probability: {prob}")
 
 
 if __name__ == "__main__":
