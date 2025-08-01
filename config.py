@@ -5,8 +5,8 @@ from typing import Dict
 @dataclass
 class Config:
     # Model settings
-    # model_name: str = "allenai/scibert_scivocab_uncased"  # Uncomment to try another model
-    model_name: str = "sentence-transformers/all-mpnet-base-v2"
+    model_name: str = "allenai/scibert_scivocab_uncased"  # Uncomment to try another model
+    # model_name: str = "sentence-transformers/all-mpnet-base-v2"
     max_length: int = 512
     dropout: float = 0.3
 
@@ -16,6 +16,7 @@ class Config:
     epochs: int = 20
     warmup_ratio: float = 0.1
     use_fp16: bool = True  # Enable mixed precision training for faster training
+    use_class_weights: bool = True  # Using inverse frequency weights for imbalanced classes
 
     # Data paths
     train_path: str = "data/train.csv"
@@ -37,7 +38,7 @@ class Config:
     # Threshold optimization settings
     optimize_thresholds: bool = True
     threshold_search_range: tuple = (0.1, 0.7)
-    threshold_search_step: float = 0.05
+    threshold_search_step: float = 0.1
 
     # Top-k settings
     use_top_k: bool = True  # Enable top-k predictions alongside threshold
@@ -45,4 +46,4 @@ class Config:
 
     def __post_init__(self):
         if self.prediction_threshold is None:
-            self.prediction_threshold = {"section": 0.5, "class": 0.2, "subclass": 0.1}
+            self.prediction_threshold = {"section": 0.5, "class": 0.2}

@@ -196,13 +196,56 @@ def calculate_average_labels(train_df: pd.DataFrame) -> dict:
     return avg_labels
 
 
+def calculate_class_weights(train_df: pd.DataFrame, encoders: dict) -> dict:
+    """Calculate inverse frequency weights for each class to handle imbalance."""
+    class_weights = {}
+
+    for level in ["section", "class"]:
+        # Count frequency of each label
+        label_counts = np.zeros(len(encoders[level].classes_))
+
+        for labels in train_df[level]:
+            indices = encoders[level].transform([labels])[0]
+            label_counts += indices
+
+        # Calculate inverse frequency weights
+        # Add smoothing to avoid division by zero
+        total_samples = len(train_df)
+        weights = total_samples / (label_counts + 1.0)
+
+        # Normalize weights to have mean of 1.0
+        weights = weights / weights.mean()
+
+        # Convert to tensor
+        class_weights[level] = torch.FloatTensor(weights)
+
+        print(f"\n{level} class weights (sample):")
+        for i in range(min(5, len(weights))):
+            print(f"  {encoders[level].classes_[i]}: {weights[i]:.3f}")
+        print(f"  ... (total {len(weights)} classes)")
+        print(f"  Weight range: [{weights.min():.3f}, {weights.max():.3f}]")
+
+    return class_weights
+
+
 def train_epoch(
-        model, dataloader, optimizer, scheduler, processor, config, device, scaler=None
+        model, dataloader, optimizer, scheduler, processor, config, device, scaler=None, class_weights=None
 ):
-    """Train for one epoch."""
+    """Train for one epoch with class-weighted loss."""
     model.train()
     total_loss = 0
-    criterion = nn.BCEWithLogitsLoss()
+
+    # Create weighted BCE loss functions
+    if class_weights:
+        section_criterion = nn.BCEWithLogitsLoss(
+            pos_weight=class_weights["section"].to(device)
+        )
+        class_criterion = nn.BCEWithLogitsLoss(
+            pos_weight=class_weights["class"].to(device)
+        )
+    else:
+        section_criterion = nn.BCEWithLogitsLoss()
+        class_criterion = nn.BCEWithLogitsLoss()
 
     progress_bar = tqdm(dataloader, desc="Training")
 
@@ -227,9 +270,9 @@ def train_epoch(
                     use_soft_masking=True,  # Soft masking for stable training
                 )
 
-                # Compute losses
-                section_loss = criterion(outputs["section_logits"], section_labels)
-                class_loss = criterion(outputs["class_logits"], class_labels)
+                # Compute losses using class-weighted criteria
+                section_loss = section_criterion(outputs["section_logits"], section_labels)
+                class_loss = class_criterion(outputs["class_logits"], class_labels)
 
                 # Check for extreme values
                 if class_loss > 100:
@@ -259,9 +302,9 @@ def train_epoch(
                 use_soft_masking=True,  # Soft masking for stable training
             )
 
-            # Compute losses
-            section_loss = criterion(outputs["section_logits"], section_labels)
-            class_loss = criterion(outputs["class_logits"], class_labels)
+            # Compute losses using class-weighted criteria
+            section_loss = section_criterion(outputs["section_logits"], section_labels)
+            class_loss = class_criterion(outputs["class_logits"], class_labels)
 
             # Weighted sum of losses
             loss = 0.3 * section_loss + 0.7 * class_loss
@@ -392,6 +435,12 @@ def main():
     # Fit encoders
     encoders = processor.fit_encoders(train_df)
 
+    # Calculate class weights for handling imbalance
+    class_weights = None
+    if config.use_class_weights:
+        print("\nCalculating class weights for handling imbalance...")
+        class_weights = calculate_class_weights(train_df, encoders)
+
     # Initialize tokenizer
     print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(config.model_name)
@@ -440,7 +489,7 @@ def main():
 
         # Train
         train_loss = train_epoch(
-            model, train_loader, optimizer, scheduler, processor, config, device, scaler
+            model, train_loader, optimizer, scheduler, processor, config, device, scaler, class_weights
         )
         print(f"Train loss: {train_loss:.4f}")
 
