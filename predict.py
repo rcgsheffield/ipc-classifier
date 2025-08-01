@@ -91,7 +91,7 @@ def predict_batch(model, dataloader, processor, config, device):
     return all_predictions_threshold, all_predictions_topk
 
 
-def format_predictions_for_csv(predictions, true_labels, project_ids):
+def format_predictions_for_csv(predictions, true_labels, project_ids, has_labels=True):
     """Format predictions for CSV output in the specified format."""
     rows = []
 
@@ -100,11 +100,12 @@ def format_predictions_for_csv(predictions, true_labels, project_ids):
             "project_id": project_ids[i]
         }
 
-        # Add true labels
-        for level in ["section", "class"]:
-            true_codes = true_labels[i][level]
-            # Format as comma-separated string without brackets
-            row[f"{level}_label"] = ', '.join(true_codes) if true_codes else ""
+        # Add true labels only if they exist
+        if has_labels:
+            for level in ["section", "class"]:
+                true_codes = true_labels[i][level]
+                # Format as comma-separated string without brackets
+                row[f"{level}_label"] = ', '.join(true_codes) if true_codes else ""
 
         # Add predictions
         pred = predictions[i]
@@ -128,7 +129,26 @@ def format_predictions_for_csv(predictions, true_labels, project_ids):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Predict IPC classifications')
+    parser.add_argument('--input', type=str,
+                        help='Path to input CSV file (if not specified, uses test_path from config)')
+    parser.add_argument('--output', type=str,
+                        help='Base name for output files (if not specified, uses output_path from config)')
+    args = parser.parse_args()
+
     config = Config()
+
+    # Override config paths if provided
+    if args.input:
+        input_path = args.input
+        print(f"Using input file: {input_path}")
+    else:
+        input_path = config.test_path
+        print(f"Using test file from config: {input_path}")
+
+    if args.output:
+        config.output_path = args.output
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -174,8 +194,8 @@ def main():
 
     model.load_state_dict(checkpoint["model_state_dict"])
 
-    print("Loading test data...")
-    test_df = pd.read_csv(config.test_path)
+    print("Loading data...")
+    test_df = pd.read_csv(input_path)
 
     # Extract project IDs (either appln_id or gtr_proj_id)
     if 'appln_id' in test_df.columns:
@@ -183,7 +203,9 @@ def main():
     elif 'gtr_proj_id' in test_df.columns:
         project_ids = test_df['gtr_proj_id'].values
     else:
-        raise ValueError("No project ID column found (expected 'appln_id' or 'gtr_proj_id')")
+        # Use first column as project ID
+        project_ids = test_df.iloc[:, 0].values
+        print(f"Using first column '{test_df.columns[0]}' as project ID")
 
     # Process without hints for test data (realistic scenario)
     test_df = processor.process_dataframe(test_df, add_hints=False)
@@ -192,7 +214,7 @@ def main():
         test_df, tokenizer, processor.encoders, config.max_length, use_hints=False
     )
     test_loader = DataLoader(
-        test_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=1
+        test_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=4
     )
 
     print("Making predictions...")
@@ -200,27 +222,70 @@ def main():
         model, test_loader, processor, config, device
     )
 
-    # Prepare true labels
+    # Prepare true labels if they exist
     true_labels = []
-    for _, row in test_df.iterrows():
-        true_labels.append(
-            {
-                "section": row["section"],
-                "class": row["class"],
-            }
-        )
+    has_labels = "section" in test_df.columns and "class" in test_df.columns
+
+    if has_labels:
+        for _, row in test_df.iterrows():
+            true_labels.append(
+                {
+                    "section": row["section"],
+                    "class": row["class"],
+                }
+            )
+    else:
+        print("No true labels found in data - running inference only mode")
+        # Create empty label structure
+        for _ in range(len(test_df)):
+            true_labels.append(
+                {
+                    "section": [],
+                    "class": [],
+                }
+            )
+
+    # Prepare true labels if they exist
+    true_labels = []
+    has_labels = "section" in test_df.columns and "class" in test_df.columns
+
+    if has_labels:
+        for _, row in test_df.iterrows():
+            true_labels.append(
+                {
+                    "section": row["section"],
+                    "class": row["class"],
+                }
+            )
+    else:
+        print("No true labels found in data - running inference only mode")
+        # Create empty label structure
+        for _ in range(len(test_df)):
+            true_labels.append(
+                {
+                    "section": [],
+                    "class": [],
+                }
+            )
 
     # Format results for threshold-based predictions
     results_threshold_df = format_predictions_for_csv(
-        predictions_threshold, true_labels, project_ids
+        predictions_threshold, true_labels, project_ids, has_labels
     )
 
-    # Define column order
-    columns = [
-        "project_id",
-        "section_label", "section_predicted", "section_probability",
-        "class_label", "class_predicted", "class_probability"
-    ]
+    # Define column order based on whether we have labels
+    if has_labels:
+        columns = [
+            "project_id",
+            "section_label", "section_predicted", "section_probability",
+            "class_label", "class_predicted", "class_probability"
+        ]
+    else:
+        columns = [
+            "project_id",
+            "section_predicted", "section_probability",
+            "class_predicted", "class_probability"
+        ]
 
     results_threshold_df = results_threshold_df[columns]
 
@@ -232,7 +297,7 @@ def main():
     # Save top-k predictions if available
     if predictions_topk:
         results_topk_df = format_predictions_for_csv(
-            predictions_topk, true_labels, project_ids
+            predictions_topk, true_labels, project_ids, has_labels
         )
         results_topk_df = results_topk_df[columns]
 
