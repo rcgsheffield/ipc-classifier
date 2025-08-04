@@ -3,7 +3,7 @@
 #SBATCH --qos=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --mem=128G
-#SBATCH --job-name=hierarchical_training
+#SBATCH --job-name=hierarchical_training_without_hints
 #SBATCH --output=logs/training_%j.out
 #SBATCH --error=logs/training_%j.err
 #SBATCH --cpus-per-task=1

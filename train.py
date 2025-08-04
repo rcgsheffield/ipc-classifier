@@ -36,12 +36,12 @@ def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray, level: str) -> dict:
 
 
 def compute_hierarchical_metrics(
-        y_true_section: np.ndarray,
-        y_true_class: np.ndarray,
-        y_pred_section: np.ndarray,
-        y_pred_class: np.ndarray,
-        processor: IPCDataProcessor,
-        partial_credit: float = 0.5
+    y_true_section: np.ndarray,
+    y_true_class: np.ndarray,
+    y_pred_section: np.ndarray,
+    y_pred_class: np.ndarray,
+    processor: IPCDataProcessor,
+    partial_credit: float = 0.5,
 ) -> dict:
     """
     Compute hierarchical metrics that give partial credit for correct parent predictions.
@@ -69,10 +69,18 @@ def compute_hierarchical_metrics(
         pred_classes = np.where(y_pred_class[i])[0]
 
         # Convert indices to actual codes
-        true_section_codes = [processor.encoders["section"].classes_[idx] for idx in true_sections]
-        true_class_codes = [processor.encoders["class"].classes_[idx] for idx in true_classes]
-        pred_section_codes = [processor.encoders["section"].classes_[idx] for idx in pred_sections]
-        pred_class_codes = [processor.encoders["class"].classes_[idx] for idx in pred_classes]
+        true_section_codes = [
+            processor.encoders["section"].classes_[idx] for idx in true_sections
+        ]
+        true_class_codes = [
+            processor.encoders["class"].classes_[idx] for idx in true_classes
+        ]
+        pred_section_codes = [
+            processor.encoders["section"].classes_[idx] for idx in pred_sections
+        ]
+        pred_class_codes = [
+            processor.encoders["class"].classes_[idx] for idx in pred_classes
+        ]
 
         # Calculate hierarchical precision
         if len(pred_section_codes) + len(pred_class_codes) > 0:
@@ -95,7 +103,9 @@ def compute_hierarchical_metrics(
                     if ps in true_section_codes:
                         precision_score_sum += partial_credit
 
-            h_precision = precision_score_sum / (len(pred_section_codes) + len(pred_class_codes))
+            h_precision = precision_score_sum / (
+                len(pred_section_codes) + len(pred_class_codes)
+            )
         else:
             h_precision = 0.0
 
@@ -119,7 +129,9 @@ def compute_hierarchical_metrics(
                     if ts in pred_section_codes:
                         recall_score_sum += partial_credit
 
-            h_recall = recall_score_sum / (len(true_section_codes) + len(true_class_codes))
+            h_recall = recall_score_sum / (
+                len(true_section_codes) + len(true_class_codes)
+            )
         else:
             h_recall = 0.0
 
@@ -141,10 +153,7 @@ def compute_hierarchical_metrics(
 
 
 def find_optimal_thresholds(
-        y_true: dict,
-        y_probs: dict,
-        processor: IPCDataProcessor,
-        config: Config
+    y_true: dict, y_probs: dict, processor: IPCDataProcessor, config: Config
 ) -> dict:
     """
     Find optimal thresholds for each level that maximize hierarchical F1 score.
@@ -161,8 +170,10 @@ def find_optimal_thresholds(
     start, end = config.threshold_search_range
     step = config.threshold_search_step
 
-    best_thresholds = {"section": config.prediction_threshold["section"],
-                       "class": config.prediction_threshold["class"]}
+    best_thresholds = {
+        "section": config.prediction_threshold["section"],
+        "class": config.prediction_threshold["class"],
+    }
     best_h_f1 = 0.0
 
     # Grid search over threshold combinations
@@ -174,9 +185,11 @@ def find_optimal_thresholds(
 
             # Compute hierarchical metrics
             h_metrics = compute_hierarchical_metrics(
-                y_true["section"], y_true["class"],
-                y_pred_section, y_pred_class,
-                processor
+                y_true["section"],
+                y_true["class"],
+                y_pred_section,
+                y_pred_class,
+                processor,
             )
 
             # Update if better
@@ -229,7 +242,15 @@ def calculate_class_weights(train_df: pd.DataFrame, encoders: dict) -> dict:
 
 
 def train_epoch(
-        model, dataloader, optimizer, scheduler, processor, config, device, scaler=None, class_weights=None
+    model,
+    dataloader,
+    optimizer,
+    scheduler,
+    processor,
+    config,
+    device,
+    scaler=None,
+    class_weights=None,
 ):
     """Train for one epoch with class-weighted loss."""
     model.train()
@@ -271,7 +292,9 @@ def train_epoch(
                 )
 
                 # Compute losses using class-weighted criteria
-                section_loss = section_criterion(outputs["section_logits"], section_labels)
+                section_loss = section_criterion(
+                    outputs["section_logits"], section_labels
+                )
                 class_loss = class_criterion(outputs["class_logits"], class_labels)
 
                 # Check for extreme values
@@ -375,9 +398,11 @@ def evaluate(model, dataloader, processor, config, device):
 
     # Compute hierarchical metrics
     h_metrics = compute_hierarchical_metrics(
-        all_labels["section"], all_labels["class"],
-        all_preds["section"], all_preds["class"],
-        processor
+        all_labels["section"],
+        all_labels["class"],
+        all_preds["section"],
+        all_preds["class"],
+        processor,
     )
     metrics.update(h_metrics)
 
@@ -421,7 +446,9 @@ def main():
 
     # Process with hints if enabled
     train_df = processor.process_dataframe(train_df, add_hints=config.use_hints)
-    val_df = processor.process_dataframe(val_df, add_hints=False)  # No hints for validation
+    val_df = processor.process_dataframe(
+        val_df, add_hints=False
+    )  # No hints for validation
 
     print(f"Train samples: {len(train_df)}")
     print(f"Val samples: {len(val_df)}")
@@ -429,8 +456,8 @@ def main():
 
     # Calculate average labels for top-k
     avg_labels = calculate_average_labels(train_df)
-    config.top_k = avg_labels
     print(f"Average labels per level: {avg_labels}")
+    print(f"Using configured top-k: {config.top_k}")
 
     # Fit encoders
     encoders = processor.fit_encoders(train_df)
@@ -461,8 +488,8 @@ def main():
         val_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=1
     )
 
-    # Initialize model
-    print("Initializing model...")
+    # Initialise model
+    print("Initialising model...")
     model = HierarchicalIPCClassifier(
         model_name=config.model_name,
         n_section=len(encoders["section"].classes_),
@@ -489,12 +516,22 @@ def main():
 
         # Train
         train_loss = train_epoch(
-            model, train_loader, optimizer, scheduler, processor, config, device, scaler, class_weights
+            model,
+            train_loader,
+            optimizer,
+            scheduler,
+            processor,
+            config,
+            device,
+            scaler,
+            class_weights,
         )
         print(f"Train loss: {train_loss:.4f}")
 
         # Evaluate
-        metrics, val_probs, val_labels = evaluate(model, val_loader, processor, config, device)
+        metrics, val_probs, val_labels = evaluate(
+            model, val_loader, processor, config, device
+        )
 
         # Print flat metrics
         print("\nFlat Metrics:")
@@ -520,16 +557,24 @@ def main():
             print(f"Optimal H-F1: {metrics['optimal_hierarchical_f1']:.4f}")
 
         # Use hierarchical F1 for model selection
-        current_h_f1 = metrics['hierarchical_f1']
+        current_h_f1 = metrics["hierarchical_f1"]
 
         # Update config with optimal thresholds if better
-        if "optimal_thresholds" in metrics and metrics["optimal_hierarchical_f1"] > current_h_f1:
+        if (
+            "optimal_thresholds" in metrics
+            and metrics["optimal_hierarchical_f1"] > current_h_f1
+        ):
             # Only update if optimized thresholds are higher than defaults
             update_config = False
             for level in ["section", "class"]:
-                if metrics["optimal_thresholds"][level] > config.prediction_threshold[level]:
+                if (
+                    metrics["optimal_thresholds"][level]
+                    > config.prediction_threshold[level]
+                ):
                     update_config = True
-                    config.prediction_threshold[level] = metrics["optimal_thresholds"][level]
+                    config.prediction_threshold[level] = metrics["optimal_thresholds"][
+                        level
+                    ]
 
             if update_config:
                 current_h_f1 = metrics["optimal_hierarchical_f1"]
@@ -540,6 +585,18 @@ def main():
             best_h_f1 = current_h_f1
             best_config = config.__dict__.copy()
 
+            if (
+                "optimal_thresholds" in metrics
+                and metrics["optimal_hierarchical_f1"] > current_h_f1
+            ):
+                best_h_f1 = metrics["optimal_hierarchical_f1"]
+                best_config["prediction_threshold"] = metrics["optimal_thresholds"]
+                print(f"Saving optimal thresholds: {metrics['optimal_thresholds']}")
+
+            hints_tag = "_hints" if config.use_hints else ""
+            hf1_tag = f"_hf1_{best_h_f1:.3f}"
+            model_name = config.model_name.rsplit("/", maxsplit=1)[-1].split("_")[0]
+
             # Save model
             torch.save(
                 {
@@ -549,7 +606,10 @@ def main():
                     "metrics": metrics,
                     "config": best_config,
                 },
-                os.path.join(config.checkpoint_dir, "best_model.pt"),
+                os.path.join(
+                    config.checkpoint_dir,
+                    f"{model_name}{hints_tag}{hf1_tag}_best_model.pt",
+                ),
             )
 
             # Save processor with hierarchy texts if using hints
@@ -557,15 +617,21 @@ def main():
                 "encoders": processor.encoders,
                 "hierarchy_mappings": processor.hierarchy_mappings,
             }
-            if hasattr(processor, 'hierarchy_texts'):
+            if hasattr(processor, "hierarchy_texts"):
                 save_data["hierarchy_texts"] = processor.hierarchy_texts
 
-            with open(os.path.join(config.checkpoint_dir, "processor.pkl"), "wb") as f:
+            with open(
+                os.path.join(
+                    config.checkpoint_dir,
+                    f"{model_name}{hints_tag}{hf1_tag}_processor.pkl",
+                ),
+                "wb",
+            ) as f:
                 pickle.dump(save_data, f)
 
-            print(f"New best model saved! (H-F1: {best_h_f1:.4f})")
+            print(f"New best model saved (H-F1: {best_h_f1:.4f})")
 
-    print(f"\nTraining complete! Best Hierarchical F1: {best_h_f1:.4f}")
+    print(f"\nTraining complete Best Hierarchical F1: {best_h_f1:.4f}")
     print(f"Best configuration: {best_config}")
 
 

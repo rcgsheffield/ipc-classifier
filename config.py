@@ -12,11 +12,11 @@ class Config:
 
     # Training settings
     batch_size: int = 32
-    learning_rate: float = 1e-5
+    learning_rate: float = 0.5e-5
     epochs: int = 20
     warmup_ratio: float = 0.1
     use_fp16: bool = True  # Enable mixed precision training for faster training
-    use_class_weights: bool = True  # Using inverse frequency weights for imbalanced classes
+    use_class_weights: bool = False  # Using inverse frequency weights for imbalanced classes
 
     # Data paths
     train_path: str = "data/train.csv"
@@ -29,7 +29,7 @@ class Config:
     output_path: str = "predictions.csv" # Base name for output files
 
     # Hierarchical settings
-    parent_confidence_threshold: float = 0.2
+    parent_confidence_threshold: float = 0.1
     prediction_threshold: Dict[str, float] = None
 
     # Hint settings
@@ -38,7 +38,7 @@ class Config:
     # Threshold optimization settings
     optimize_thresholds: bool = True
     threshold_search_range: tuple = (0.1, 0.7)
-    threshold_search_step: float = 0.1
+    threshold_search_step: float = 0.05
 
     # Top-k settings
     use_top_k: bool = True  # Enable top-k predictions alongside threshold
@@ -47,3 +47,5 @@ class Config:
     def __post_init__(self):
         if self.prediction_threshold is None:
             self.prediction_threshold = {"section": 0.5, "class": 0.2}
+        if self.top_k is None:
+            self.top_k = {"section":3, "class":3}

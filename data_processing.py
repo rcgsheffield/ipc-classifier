@@ -43,23 +43,18 @@ class IPCDataProcessor:
             if not desc or pd.isna(desc):
                 continue
 
-            # Parse the description format: [A] HUMAN NECESSITIES | [A01] AGRICULTURE...
             parts = desc.split(" | ")
 
             section_code = row["section_code"]
             class_code = row["class_code"]
 
-            # Extract section description
             if len(parts) >= 1 and section_code:
                 section_part = parts[0]
-                # Extract text after the code in brackets
                 if f"[{section_code}]" in section_part:
                     section_desc = section_part.split(f"[{section_code}]", 1)[1].strip()
                     texts["section"][section_code] = section_desc
 
-            # For class, combine section and class descriptions but remove codes
             if len(parts) >= 2 and class_code:
-                # Remove bracketed codes from each part
                 cleaned_parts = []
                 for part in parts:
                     if "]" in part:
@@ -78,21 +73,19 @@ class IPCDataProcessor:
             value = value.strip("[]")
             if value:
                 items = [item.strip().strip("'\"") for item in value.split(",")]
-                return list(set(items))  # Remove duplicates
+                return list(set(items))
         elif isinstance(value, list):
-            return list(set(value))  # Remove duplicates from existing lists
+            return list(set(value))
         return []
 
     def get_all_level_hints(self, section_codes: List[str], class_codes: List[str]) -> str:
         """Get combined hints from all hierarchy levels."""
         hints = []
 
-        # Add section hints (without codes)
         for code in section_codes:
             if code in self.hierarchy_texts["section"]:
                 hints.append(self.hierarchy_texts['section'][code])
 
-        # Add class hints (which already include full hierarchy)
         for code in class_codes:
             if code in self.hierarchy_texts["class"]:
                 hints.append(self.hierarchy_texts["class"][code])
@@ -106,18 +99,24 @@ class IPCDataProcessor:
         for col in ["section", "class"]:
             if col in df.columns:
                 df[col] = df[col].apply(self.parse_labels)
-                # Remove duplicates and ensure list
                 df[col] = df[col].apply(lambda x: list(set(x)) if x else [])
 
-        # Add hints if requested
         if add_hints and "section" in df.columns and "class" in df.columns:
-            df["appln_abstract_with_hint"] = df.apply(
-                lambda row: (
-                        row["appln_abstract"] + " [SEP] " +
+            text_columns = ['appln_abstract', 'abstract', 'full_description', 'description', 'text', 'title']
+            text_col = None
+            for col in text_columns:
+                if col in df.columns:
+                    text_col = col
+                    break
+
+            if text_col:
+                df[f"{text_col}_with_hint"] = df.apply(
+                    lambda row: (
+                        str(row[text_col]) + " [SEP] " +
                         self.get_all_level_hints(row["section"], row["class"])
-                ).strip(),
-                axis=1
-            )
+                    ).strip(),
+                    axis=1
+                )
 
         return df
 
@@ -151,12 +150,12 @@ class IPCDataset(Dataset):
     """Dataset for hierarchical IPC classification."""
 
     def __init__(
-            self,
-            df: pd.DataFrame,
-            tokenizer,
-            encoders: Dict,
-            max_length: int = 512,
-            use_hints: bool = False
+        self,
+        df: pd.DataFrame,
+        tokenizer,
+        encoders: Dict,
+        max_length: int = 512,
+        use_hints: bool = False
     ):
         self.df = df
         self.tokenizer = tokenizer
@@ -170,27 +169,76 @@ class IPCDataset(Dataset):
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
 
-        # Use hint-enhanced text if available and requested
-        if self.use_hints and "appln_abstract_with_hint" in row:
-            text = row["appln_abstract_with_hint"]
-        else:
-            text = row["appln_abstract"]
+        text = None
+        text_columns = ['appln_abstract', 'abstract', 'full_description', 'description', 'text', 'title']
+        found_column = None
 
-        # Tokenize text
+        for col in text_columns:
+            if col in self.df.columns:
+                try:
+                    val = row[col]
+                    if pd.notna(val) and str(val).strip():
+                        text = val
+                        found_column = col
+                        break
+                except KeyError:
+                    continue
+
+        if text is None:
+            available_cols = list(self.df.columns)
+            raise KeyError(
+                f"No text column found at index {idx}. "
+                f"Looked for: {text_columns}. "
+                f"Available columns: {available_cols}"
+            )
+
+        if self.use_hints and found_column:
+            hint_column = f"{found_column}_with_hint"
+            if hint_column in self.df.columns:
+                try:
+                    hint_val = row[hint_column]
+                    if pd.notna(hint_val):
+                        text = hint_val
+                except KeyError:
+                    pass
+
         encoding = self.tokenizer(
-            text,
+            str(text),
             truncation=True,
             padding="max_length",
             max_length=self.max_length,
             return_tensors="pt",
         )
 
-        # Encode labels
         labels = {}
         for level in ["section", "class"]:
-            labels[f"{level}_labels"] = torch.FloatTensor(
-                self.encoders[level].transform([row[level]])[0]
-            )
+            if level in self.df.columns:
+                try:
+                    label_val = row[level]
+                    if pd.notna(label_val):
+                        if isinstance(label_val, str):
+                            label_list = [label_val]
+                        else:
+                            label_list = label_val
+
+                        labels[f"{level}_labels"] = torch.FloatTensor(
+                            self.encoders[level].transform([label_list])[0]
+                        )
+                    else:
+                        labels[f"{level}_labels"] = torch.zeros(
+                            len(self.encoders[level].classes_),
+                            dtype=torch.float
+                        )
+                except (KeyError, Exception):
+                    labels[f"{level}_labels"] = torch.zeros(
+                        len(self.encoders[level].classes_),
+                        dtype=torch.float
+                    )
+            else:
+                labels[f"{level}_labels"] = torch.zeros(
+                    len(self.encoders[level].classes_),
+                    dtype=torch.float
+                )
 
         return {
             "input_ids": encoding["input_ids"].squeeze(0),

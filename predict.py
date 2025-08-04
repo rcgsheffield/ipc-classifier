@@ -154,7 +154,7 @@ def main():
     print(f"Using device: {device}")
 
     print("Loading processor...")
-    with open(os.path.join(config.checkpoint_dir, "processor.pkl"), "rb") as f:
+    with open(os.path.join(config.checkpoint_dir, "scibert_hf1_0.389_processor.pkl"), "rb") as f:
         saved_data = pickle.load(f)
 
     processor = IPCDataProcessor(config.ipc_metadata_path)
@@ -167,7 +167,7 @@ def main():
 
     print("Loading model...")
     checkpoint = torch.load(
-        os.path.join(config.checkpoint_dir, "best_model.pt"), map_location=device
+        os.path.join(config.checkpoint_dir, "scibert_hf1_0.389_best_model.pt"), map_location=device, weights_only=False
     )
 
     # Load saved configuration
@@ -197,6 +197,13 @@ def main():
     print("Loading data...")
     test_df = pd.read_csv(input_path)
 
+    # Remove rows with null/empty full_description
+    test_df = test_df.dropna(subset=['full_description'])
+    test_df = test_df[test_df['full_description'].str.strip() != '']
+    test_df = test_df.reset_index(drop=True)
+
+    print(f"Filtered dataset size: {len(test_df)} (removed empty descriptions)")
+
     # Extract project IDs (either appln_id or gtr_proj_id)
     if 'appln_id' in test_df.columns:
         project_ids = test_df['appln_id'].values
@@ -214,7 +221,7 @@ def main():
         test_df, tokenizer, processor.encoders, config.max_length, use_hints=False
     )
     test_loader = DataLoader(
-        test_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=4
+        test_dataset, batch_size=config.batch_size * 2, shuffle=False, num_workers=0
     )
 
     print("Making predictions...")
@@ -304,22 +311,6 @@ def main():
         topk_output_path = config.output_path.replace('.csv', '_topk.csv')
         results_topk_df.to_csv(topk_output_path, index=False)
         print(f"Top-k predictions saved to {topk_output_path}")
-
-    print("\nSample predictions (threshold-based):")
-    print("=" * 80)
-    for i in range(min(3, len(results_threshold_df))):
-        print(f"\nSample {i + 1}:")
-        print(f"Project ID: {results_threshold_df.iloc[i]['project_id']}")
-
-        for level in ["section", "class"]:
-            true = results_threshold_df.iloc[i][f"{level}_label"]
-            pred = results_threshold_df.iloc[i][f"{level}_predicted"]
-            prob = results_threshold_df.iloc[i][f"{level}_probability"]
-
-            print(f"\n{level.upper()}:")
-            print(f"  True: {true}")
-            print(f"  Predicted: {pred}")
-            print(f"  Probability: {prob}")
 
 
 if __name__ == "__main__":

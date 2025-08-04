@@ -4,8 +4,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --mem=128G
 #SBATCH --job-name=prediction
-#SBATCH --output=logs/training_%j.out
-#SBATCH --error=logs/training_%j.err
+#SBATCH --output=logs/prediction_%j.out
+#SBATCH --error=logs/prediction_%j.err
 #SBATCH --cpus-per-task=1
 
 # Create logs directory if it doesn't exist
@@ -22,4 +22,4 @@ module load Anaconda3/2024.02-1
 
 source activate innovation
 
-python predict.py
+python predict.py --input data/gtr_without_patents_cleaned.csv --output model_predictions.csv

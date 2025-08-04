@@ -1,0 +1,288 @@
+Job ID: 7402858
+Running on node: gpu05
+Using device: cuda
+Using mixed precision training (fp16)
+Loading data processor...
+Loading datasets...
+Train samples: 124641
+Val samples: 17903
+Using hints: False
+Average labels per level: {'section': 1, 'class': 1}
+Using configured top-k: {'section': 3, 'class': 3}
+section: 8 unique labels
+class: 123 unique labels
+Loading tokenizer...
+Initialising model...
+
+Epoch 1/20
+Train loss: 0.3134
+
+Flat Metrics:
+section - F1 micro: 0.7441, F1 macro: 0.6488, Precision micro: 0.8174, Recall micro: 0.6828
+class - F1 micro: 0.3304, F1 macro: 0.0303, Precision micro: 0.6628, Recall micro: 0.2200
+
+Hierarchical Metrics:
+H-Precision: 0.3785, H-Recall: 0.2598, H-F1: 0.2918
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3126
+Saving optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+New best model saved (H-F1: 0.3126)
+
+Epoch 2/20
+Train loss: 0.2708
+
+Flat Metrics:
+section - F1 micro: 0.7846, F1 macro: 0.7355, Precision micro: 0.8409, Recall micro: 0.7354
+class - F1 micro: 0.3864, F1 macro: 0.0427, Precision micro: 0.6205, Recall micro: 0.2805
+
+Hierarchical Metrics:
+H-Precision: 0.3863, H-Recall: 0.2900, H-F1: 0.3166
+
+Optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3330
+Saving optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+New best model saved (H-F1: 0.3330)
+
+Epoch 3/20
+Train loss: 0.2047
+
+Flat Metrics:
+section - F1 micro: 0.8079, F1 macro: 0.7816, Precision micro: 0.8490, Recall micro: 0.7706
+class - F1 micro: 0.4429, F1 macro: 0.0684, Precision micro: 0.6191, Recall micro: 0.3448
+
+Hierarchical Metrics:
+H-Precision: 0.3946, H-Recall: 0.3164, H-F1: 0.3379
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3520
+Saving optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+New best model saved (H-F1: 0.3520)
+
+Epoch 4/20
+Train loss: 0.1691
+
+Flat Metrics:
+section - F1 micro: 0.8121, F1 macro: 0.7895, Precision micro: 0.8495, Recall micro: 0.7779
+class - F1 micro: 0.4820, F1 macro: 0.0928, Precision micro: 0.6183, Recall micro: 0.3949
+
+Hierarchical Metrics:
+H-Precision: 0.3990, H-Recall: 0.3322, H-F1: 0.3500
+
+Optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3654
+
+Epoch 5/20
+Train loss: 0.1477
+
+Flat Metrics:
+section - F1 micro: 0.8163, F1 macro: 0.7947, Precision micro: 0.8465, Recall micro: 0.7881
+class - F1 micro: 0.5025, F1 macro: 0.1059, Precision micro: 0.6228, Recall micro: 0.4211
+
+Hierarchical Metrics:
+H-Precision: 0.4042, H-Recall: 0.3413, H-F1: 0.3581
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3723
+Saving optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+New best model saved (H-F1: 0.3723)
+
+Epoch 6/20
+Train loss: 0.1326
+
+Flat Metrics:
+section - F1 micro: 0.8210, F1 macro: 0.8000, Precision micro: 0.8500, Recall micro: 0.7940
+class - F1 micro: 0.5146, F1 macro: 0.1196, Precision micro: 0.6378, Recall micro: 0.4314
+
+Hierarchical Metrics:
+H-Precision: 0.4074, H-Recall: 0.3456, H-F1: 0.3620
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3762
+
+Epoch 7/20
+Train loss: 0.1210
+
+Flat Metrics:
+section - F1 micro: 0.8226, F1 macro: 0.8013, Precision micro: 0.8508, Recall micro: 0.7962
+class - F1 micro: 0.5320, F1 macro: 0.1369, Precision micro: 0.6421, Recall micro: 0.4541
+
+Hierarchical Metrics:
+H-Precision: 0.4099, H-Recall: 0.3532, H-F1: 0.3681
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3825
+
+Epoch 8/20
+Train loss: 0.1117
+
+Flat Metrics:
+section - F1 micro: 0.8242, F1 macro: 0.8061, Precision micro: 0.8396, Recall micro: 0.8094
+class - F1 micro: 0.5434, F1 macro: 0.1626, Precision micro: 0.6063, Recall micro: 0.4924
+
+Hierarchical Metrics:
+H-Precision: 0.4103, H-Recall: 0.3655, H-F1: 0.3759
+
+Optimal thresholds: {'section': np.float64(0.3500000000000001), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3895
+Saving optimal thresholds: {'section': np.float64(0.3500000000000001), 'class': np.float64(0.1)}
+New best model saved (H-F1: 0.3895)
+
+Epoch 9/20
+Train loss: 0.1042
+
+Flat Metrics:
+section - F1 micro: 0.8239, F1 macro: 0.8048, Precision micro: 0.8409, Recall micro: 0.8075
+class - F1 micro: 0.5504, F1 macro: 0.1725, Precision micro: 0.6165, Recall micro: 0.4971
+
+Hierarchical Metrics:
+H-Precision: 0.4118, H-Recall: 0.3666, H-F1: 0.3772
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3910
+
+Epoch 10/20
+Train loss: 0.0978
+
+Flat Metrics:
+section - F1 micro: 0.8242, F1 macro: 0.8070, Precision micro: 0.8377, Recall micro: 0.8111
+class - F1 micro: 0.5611, F1 macro: 0.1856, Precision micro: 0.6250, Recall micro: 0.5091
+
+Hierarchical Metrics:
+H-Precision: 0.4124, H-Recall: 0.3702, H-F1: 0.3795
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3929
+
+Epoch 11/20
+Train loss: 0.0925
+
+Flat Metrics:
+section - F1 micro: 0.8242, F1 macro: 0.8061, Precision micro: 0.8376, Recall micro: 0.8112
+class - F1 micro: 0.5663, F1 macro: 0.1909, Precision micro: 0.6330, Recall micro: 0.5123
+
+Hierarchical Metrics:
+H-Precision: 0.4125, H-Recall: 0.3709, H-F1: 0.3801
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3930
+
+Epoch 12/20
+Train loss: 0.0881
+
+Flat Metrics:
+section - F1 micro: 0.8234, F1 macro: 0.8051, Precision micro: 0.8335, Recall micro: 0.8137
+class - F1 micro: 0.5684, F1 macro: 0.1949, Precision micro: 0.6313, Recall micro: 0.5168
+
+Hierarchical Metrics:
+H-Precision: 0.4125, H-Recall: 0.3726, H-F1: 0.3811
+
+Optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3946
+
+Epoch 13/20
+Train loss: 0.0844
+
+Flat Metrics:
+section - F1 micro: 0.8243, F1 macro: 0.8049, Precision micro: 0.8367, Recall micro: 0.8121
+class - F1 micro: 0.5707, F1 macro: 0.2036, Precision micro: 0.6268, Recall micro: 0.5238
+
+Hierarchical Metrics:
+H-Precision: 0.4153, H-Recall: 0.3743, H-F1: 0.3833
+
+Optimal thresholds: {'section': np.float64(0.20000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3972
+
+Epoch 14/20
+Train loss: 0.0812
+
+Flat Metrics:
+section - F1 micro: 0.8226, F1 macro: 0.8069, Precision micro: 0.8296, Recall micro: 0.8158
+class - F1 micro: 0.5721, F1 macro: 0.2091, Precision micro: 0.6209, Recall micro: 0.5304
+
+Hierarchical Metrics:
+H-Precision: 0.4147, H-Recall: 0.3767, H-F1: 0.3840
+
+Optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3975
+
+Epoch 15/20
+Train loss: 0.0785
+
+Flat Metrics:
+section - F1 micro: 0.8239, F1 macro: 0.8043, Precision micro: 0.8288, Recall micro: 0.8191
+class - F1 micro: 0.5737, F1 macro: 0.2142, Precision micro: 0.6199, Recall micro: 0.5339
+
+Hierarchical Metrics:
+H-Precision: 0.4147, H-Recall: 0.3780, H-F1: 0.3850
+
+Optimal thresholds: {'section': np.float64(0.3500000000000001), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3984
+
+Epoch 16/20
+Train loss: 0.0762
+
+Flat Metrics:
+section - F1 micro: 0.8251, F1 macro: 0.8089, Precision micro: 0.8301, Recall micro: 0.8201
+class - F1 micro: 0.5769, F1 macro: 0.2160, Precision micro: 0.6210, Recall micro: 0.5386
+
+Hierarchical Metrics:
+H-Precision: 0.4158, H-Recall: 0.3800, H-F1: 0.3866
+
+Optimal thresholds: {'section': np.float64(0.30000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.3996
+
+Epoch 17/20
+Train loss: 0.0745
+
+Flat Metrics:
+section - F1 micro: 0.8250, F1 macro: 0.8064, Precision micro: 0.8305, Recall micro: 0.8196
+class - F1 micro: 0.5785, F1 macro: 0.2192, Precision micro: 0.6242, Recall micro: 0.5390
+
+Hierarchical Metrics:
+H-Precision: 0.4163, H-Recall: 0.3799, H-F1: 0.3868
+
+Optimal thresholds: {'section': np.float64(0.20000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.4001
+
+Epoch 18/20
+Train loss: 0.0732
+
+Flat Metrics:
+section - F1 micro: 0.8241, F1 macro: 0.8054, Precision micro: 0.8314, Recall micro: 0.8169
+class - F1 micro: 0.5793, F1 macro: 0.2206, Precision micro: 0.6259, Recall micro: 0.5390
+
+Hierarchical Metrics:
+H-Precision: 0.4164, H-Recall: 0.3792, H-F1: 0.3865
+
+Optimal thresholds: {'section': np.float64(0.20000000000000004), 'class': np.float64(0.1)}
+Optimal H-F1: 0.4002
+
+Epoch 19/20
+Train loss: 0.0722
+
+Flat Metrics:
+section - F1 micro: 0.8244, F1 macro: 0.8070, Precision micro: 0.8284, Recall micro: 0.8205
+class - F1 micro: 0.5774, F1 macro: 0.2224, Precision micro: 0.6145, Recall micro: 0.5445
+
+Hierarchical Metrics:
+H-Precision: 0.4160, H-Recall: 0.3814, H-F1: 0.3876
+
+Optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+Optimal H-F1: 0.4013
+
+Epoch 20/20
+Train loss: 0.0717
+
+Flat Metrics:
+section - F1 micro: 0.8247, F1 macro: 0.8068, Precision micro: 0.8292, Recall micro: 0.8203
+class - F1 micro: 0.5791, F1 macro: 0.2239, Precision micro: 0.6171, Recall micro: 0.5455
+
+Hierarchical Metrics:
+H-Precision: 0.4163, H-Recall: 0.3815, H-F1: 0.3878
+
+Optimal thresholds: {'section': np.float64(0.25000000000000006), 'class': np.float64(0.1)}
+Optimal H-F1: 0.4016
+
+Training complete Best Hierarchical F1: 0.3895
+Best configuration: {'model_name': 'allenai/scibert_scivocab_uncased', 'max_length': 512, 'dropout': 0.3, 'batch_size': 32, 'learning_rate': 5e-06, 'epochs': 20, 'warmup_ratio': 0.1, 'use_fp16': True, 'use_class_weights': False, 'train_path': 'data/train.csv', 'val_path': 'data/val.csv', 'test_path': 'data/test.csv', 'ipc_metadata_path': 'data/full_ipc_combined.csv', 'checkpoint_dir': './checkpoints', 'output_path': 'predictions.csv', 'parent_confidence_threshold': 0.1, 'prediction_threshold': {'section': np.float64(0.3500000000000001), 'class': np.float64(0.1)}, 'use_hints': False, 'optimize_thresholds': True, 'threshold_search_range': (0.1, 0.7), 'threshold_search_step': 0.05, 'use_top_k': True, 'top_k': {'section': 3, 'class': 3}}
