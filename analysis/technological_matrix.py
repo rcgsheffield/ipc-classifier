@@ -103,9 +103,9 @@ def label_distribution(matrix):
         print(f"   {label}: {count} projects ({pct:.1f}%)")
 
 
-    print("\n2. Number of labels per project:")
-    for project, count in project_label_counts.items():
-        print(f"   {project}: {count} labels")
+    # print("\n2. Number of labels per project:")
+    # for project, count in project_label_counts.items():
+    #     print(f"   {project}: {count} labels")
 
 
     label_counts_list = list(project_label_counts.values())
@@ -133,7 +133,7 @@ def label_distribution(matrix):
 def summary(matrix):
     for col in matrix.columns:
         count = sum(1 for val in matrix[col] if val != '' and val != [])
-        print(f"{col}: {count}/{len(matrix)} projects ({count / len(matrix) * 100:.0f}%)")
+        print(f"{col}: {count}/{len(matrix)} projects ({count / len(matrix) * 100:.1f}%)")
 
 
 if __name__ == "__main__":
@@ -141,15 +141,15 @@ if __name__ == "__main__":
     print("Class-level Matrix:")
     print(class_matrix)
 
-    class_summary = get_unique_labels(class_matrix)
-    print("Unique labels per project:")
-    print(class_summary)
+    # class_summary = get_unique_labels(class_matrix)
+    # print("Unique labels per project:")
+    # print(class_summary)
 
     section_matrix = create_probability_matrix("data/new_predictions/model_predictions_threshold.csv", level='section')
     print(section_matrix)
 
-    class_matrix.to_csv("project_technology_matrix_class.csv")
-    section_matrix.to_csv("project_technology_matrix_section.csv")
+    # class_matrix.to_csv("project_technology_matrix_class.csv")
+    # section_matrix.to_csv("project_technology_matrix_section.csv")
     label_distribution(section_matrix)
 
     print("\n=== SUMMARY ===")
