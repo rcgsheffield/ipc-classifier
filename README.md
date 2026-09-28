@@ -1,5 +1,11 @@
 # Hierarchical IPC Patent Classification
 
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![isort](https://img.shields.io/badge/imports-isort-%231674b1)](https://pycqa.github.io/isort/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://pre-commit.com/)
+
 This repository contains a PyTorch implementation of hierarchical multi-label patent classification by fine-tuning sentence transformers
 (BERT-based models). This codebase classifies patent abstracts into the International Patent Classification (IPC) hierarchy with
 parent-child constraints between classification levels.
