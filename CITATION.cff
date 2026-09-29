@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Hierarchical Multi-Label Classifier of Patent Abstracts by International Patent Classification"
+authors:
+  - family-names: Allian
+    given-names: Farhad
+    email: farhad.allian@sheffield.ac.uk
+    affiliation: University of Sheffield
+  - family-names: Vanino
+    given-names: Enrico
+    email: e.vanino@sheffield.ac.uk
+    affiliation: University of Sheffield
+  - family-names: Corradini
+    given-names: Carlo
+    email: c.corradini@henley.reading.ac.uk
+    affiliation: University of Reading
+version: 1
+date-released: "2026-09-29"
+doi: 10.15131/shef.data.34014453.v1
+url: "https://github.com/rcgsheffield/ipc-classifier"
+repository-code: "https://github.com/rcgsheffield/ipc-classifier"
+license: MIT
+abstract: >
+  A PyTorch implementation of hierarchical multi-label patent classification
+  by fine-tuning sentence transformers (BERT-based models). Classifies patent
+  abstracts into the International Patent Classification (IPC) hierarchy with
+  parent-child constraints between classification levels (Section, Class, Subclass).
+keywords:
+  - patent classification
+  - hierarchical multi-label classification
+  - natural language processing
+  - BERT
+  - SciBERT
+  - IPC
+  - machine learning
