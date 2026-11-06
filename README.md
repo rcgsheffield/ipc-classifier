@@ -142,7 +142,6 @@ Place both model files in a `checkpoints/` folder at the repository root. `predi
 
 > **Security note:** `.pt` and `.pkl` files can execute arbitrary code when loaded. Only use files from the Figshare deposit above.
 
-Hierarchical F1 of 0.389 means predictions are noisy. Treat them as candidates to validate, not ground truth.
 
 ### Run predictions
 
