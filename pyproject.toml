@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ipc-classifier"
-version = "0.1.0"
+version = "2"
 description = "A hierarchical neural network model for multi-label text classification of patent data."
 authors = [{name = "Dr. Farhad Allian", email = "farhad.allian@sheffield.ac.uk"}]
 license = {text = "MIT"}
