@@ -15,9 +15,9 @@ authors:
     given-names: Carlo
     email: c.corradini@henley.reading.ac.uk
     affiliation: University of Reading
-version: 1
-date-released: "2026-09-29"
-doi: 10.15131/shef.data.34014453.v1
+version: 2
+date-released: "2026-11-06"
+doi: 10.15131/shef.data.34014453
 url: "https://github.com/rcgsheffield/ipc-classifier"
 repository-code: "https://github.com/rcgsheffield/ipc-classifier"
 license: MIT
